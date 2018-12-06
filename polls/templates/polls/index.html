@@ -1,0 +1,13 @@
+{% if latest_movie_list %}
+    <ul>
+    {% for movie in latest_movie_list %}
+        <li><a href={% url 'polls:detail' movie.id %}>{{ movie.movie_text}}</a> Score: {{movie.score}}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+<p>
+	<a href={% url 'polls:add_entry' %}> Add new movie </a>
+</p>

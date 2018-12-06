@@ -1,0 +1,9 @@
+{% block content %} 
+	<p> Add a new topic </p>
+	<form action="{% url 'polls:add_entry' %}" method  = 'post'>
+		{% csrf_token %}
+		{{form.as_p}}
+		<button name="submit"> add movie </button>
+	</form>
+
+{% endblock content %}  
