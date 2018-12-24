@@ -3,7 +3,7 @@
 <link rel = "stylesheet" type = "text/css" href="{% static 'polls/style.css' %}" />
 <p> 
 	<h1>
-		Top Rated Movies on our Radar
+		Movies on our Radar Needing Votes
 	</h1>
 </p>
 {% if latest_movie_list %}
@@ -16,10 +16,10 @@
     </ul>
     {% endfor %}
 {% else %}
-    <p>No movies rated yet</p>
+    <p>No polls are available.</p>
 {% endif %}
 
-<p> <a href='polls/to_vote'> Movies needing votes </a> </p>
+<p> <a href='/polls'> Highest Rated </a> </p>
 <p>
 	<a href='polls/add_entry'> Add new movie </a>
 </p>

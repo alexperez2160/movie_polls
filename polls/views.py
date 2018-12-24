@@ -8,25 +8,38 @@ from django.template import loader
 
 from django.urls import path, reverse
 
+from django.views import generic
+
 from . import views
 
 from .models import Movie
 
 from .forms import MovieForm
 
+from django.contrib import messages
 
-def index(request):
-    latest_movie_list = Movie.objects.order_by('-score')[:5]
-    context = {'latest_movie_list': latest_movie_list}
-    return render(request, 'polls/index.html', context)
 
-def detail(request, question_id):
-    movie = get_object_or_404(Movie, pk=question_id)
-    return render(request, 'polls/detail.html', {'movie': movie})
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_movie_list'
 
-def results(request, question_id):
-    question = get_object_or_404(Movie, pk=question_id)
-    return render(request, 'polls/results.html', {'movie': question})
+    def get_queryset(self): 
+        return Movie.objects.all().filter(score__gt=0).order_by('-pub_date')[:5]
+
+class ToVoteView(generic.ListView):
+    template_name = 'polls/to_vote.html'
+    context_object_name = 'latest_movie_list'
+
+    def get_queryset(self): 
+        return Movie.objects.all().filter(score=0).order_by('-pub_date')
+
+class DetailView(generic.DetailView):
+    model = Movie
+    template_name = 'polls/detail.html'
+
+class ResultsView(generic.DetailView):
+    model = Movie 
+    template_name = 'polls/results.html'
 
 def vote(request, question_id):
     question = get_object_or_404(Movie, pk=question_id)
@@ -47,21 +60,20 @@ def vote(request, question_id):
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-
+        return HttpResponseRedirect('/polls/')
 
 def add_entry(request):
-	if request.method != 'POST': 
-		# No data submitted; create a blank form. 
-		form = MovieForm()
-	else: 
-		form = MovieForm(request.POST)
-		if form.is_valid():
-			form.save()
-			new_movie = Movie.objects.all()[len(Movie.objects.all())-1]
-			for i in range(1,6, 1):
-				new_movie.choice_set.create(choice_text =str(i), votes = 0)
-			return HttpResponseRedirect(reverse('polls:index'))
-
-	context = {'form': form}
-	return render(request, 'polls/new_topic.html', context)
+    if request.method == 'POST': 
+        form = MovieForm(request.POST)
+        if form.is_valid() and form.cleaned_data['movie_text'] not in [str(i) for i in list(Movie.objects.all())]:
+            form.save()
+            new_movie = Movie.objects.all()[len(Movie.objects.all())-1]
+            for i in range(1,6, 1):
+                new_movie.choice_set.create(choice_text =str(i), votes = 0)
+            return HttpResponseRedirect('/polls/')
+        else: 
+            messages.error(request, 'Movie already listed!')
+    else: 
+        form = MovieForm()
+    context = {'form': form}
+    return render(request, 'polls/new_topic.html', context)
